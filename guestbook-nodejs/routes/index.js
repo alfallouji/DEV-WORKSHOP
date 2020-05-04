@@ -7,8 +7,7 @@ exports.home = function(req, res) {
         if (err) {
             throw err;
         } else {
-            var s3UrlBase = 'https://s3-' + cfg.get('aws:region') + '.amazonaws.com/' + cfg.get('aws:s3Bucket') + '/';
-            res.render('index', { 'rows': rows, 's3UrlBase': s3UrlBase });
+            res.render('index', { 'rows': rows });
         }
     });
 };
@@ -17,8 +16,14 @@ exports.post = function(req, res) {
     var name = req.body.name;
     var message = req.body.message;
 
-    // Debug.
+    // Debug
     console.log('Post data:', req.body);
+
+    // name and message cant be empty
+    if (name == '' ||  message == '') {
+        res.redirect('/');
+        return;
+    }
 
     // Write record to db.
     var db = req.app.get('db');
@@ -28,19 +33,6 @@ exports.post = function(req, res) {
             throw err;
         }
 
-        // Upload image.
-        if (req.file) {
-            var aws = req.app.get('aws');
-            aws.uploadImage(req.file.filename, req.file.path, function(err, data) {
-                if (err) {
-                    console.log('Upload image to S3 failed.');
-                    throw err;
-                }
-
-                res.redirect('/');
-            });
-        } else {
-            res.redirect('/');
-        }
+        res.redirect('/');
     });
 };
